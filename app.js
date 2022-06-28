@@ -1,35 +1,53 @@
 const express = require('express');
 const path = require('path');
 
-const app = express()
+const mongoose = require('mongoose')
 
-let todos = [{ id: 1, text: 'Learn Node' }, { id: 2, text: 'Learn React' }]
+const Todo = require('./models/Todo')
 
-app.use(express.json())
-app.use(express.static(path.join(__dirname, 'public')))
+const main = async () => {
+    const app = express()
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+    mongoose.connect('mongodb://localhost:27017/todo').then(() => {
+        console.log('Connected to MongoDB')
+    }).catch((e) => {
+        console.log(e)
+    })
+    
 
-app.post('/addTodo', (req, res) => {
-    let todo = req.body
-    todo.id = Math.floor(Math.random() * 100)
-    todos.push(todo)
-})
 
-app.post('/removeTodo', (req, res) => {
-    console.log(todos)
-    let todo = req.body
-    console.log(todo)
-    todos = todos.filter(t => t.id !== todo.id)
-    console.log(todos)
-})
 
-app.get('/todos', (req, res) => {
-    res.json(todos)
-})
+    app.use(express.json())
+    app.use(express.static(path.join(__dirname, 'public')))
 
-app.listen(3000, () => {
-    console.log('Example app listening on port 3000!')
-})
+    app.get('/', (req, res) => {
+        res.send('Hello World!')
+    })
+
+
+    app.post('/addTodo', async (req, res) => {
+        console.log(req.body)
+        let todo = req.body
+        todo.id = Math.floor(Math.random() * 100)
+        console.log(todo)
+        await Todo.create(todo)
+    })
+
+    app.post('/removeTodo', async (req, res) => {
+        // console.log(todos)
+        let todo = req.body
+        await Todo.findOneAndDelete({ id: todo.id })
+    })
+
+    app.get('/todos', async (req, res) => {
+        const todos = await Todo.find()
+        console.log(todos)
+        res.json(todos)
+    })
+
+    app.listen(3000, () => {
+        console.log('Example app listening on port 3000!')
+    })
+}
+
+main()

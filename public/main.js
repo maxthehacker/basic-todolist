@@ -18,7 +18,7 @@ const getTodos = async () => {
 
     todos.forEach((element) => {
         const todo = document.createElement('li');
-        todo.innerHTML = element.text; 
+        todo.innerHTML = element.text;
         todo.onclick = () => {
             console.log('clicked')
             removeTodo(element.id);
